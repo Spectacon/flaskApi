@@ -4,16 +4,23 @@ from flask_cors import CORS
 # from celery import Celery
 
 import os
+import sys
 from flask import got_request_exception
 
-from searchApi.blueprints.page.views import page
-from searchApi.blueprints.api.raw import raw
-from searchApi.blueprints.api.search import search
-from searchApi.blueprints.api.api import api
+# sys.path.insert(0, '/home/amninder/Desktop/Folder_2')
+# sys.path.insert(0, '/flaskApi/searchApi')
+
+# sys.path.append('/.../application/app/folder')
+# sys.path.append('/flaskApi/')
+
+from blueprints.page.views import page
+from blueprints.api.raw import raw
+from blueprints.api.search import search
+from blueprints.api.api import api
 
 # from searchApi.extensions import debug_toolbar, csrf
-from searchApi.extensions import csrf
-
+# from searchApi.extensions import csrf
+from extensions import csrf
 
 # application factory, see: http://flask.pocoo.org/docs/patterns/appfactories/
 # def create_app(settings_override=None):
@@ -71,8 +78,8 @@ def extensions(app):
 
     return None
 
-
 # only used if: python searchApi/app.py
 if __name__ == "__main__":
     app = create_app("config.settings")
     app.run(debug=True)  # nosec - for bandit testing in dev
+

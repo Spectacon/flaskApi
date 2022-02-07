@@ -11,6 +11,7 @@ Web Search Proxy for Google, Bing, DDG and others.
 ## How To run
 ```
 python searchApi/app.py
+python3 searchApi/app.py
 ```
 
 ## How to test
@@ -21,6 +22,9 @@ pytest -v searchApi
 ## How to update with pip
 ```
 pip install -r requirements.txt --use-deprecated=legacy-resolver
+pip3.7 install -r requirements.txt --use-deprecated=legacy-resolver
+pip3 install -r requirements.txt 
+python3.7 --version
 ```
 
 ## Flake8 - Linter

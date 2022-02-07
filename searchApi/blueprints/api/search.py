@@ -1,8 +1,11 @@
 from flask import Blueprint, request
 import requests
 from bs4 import BeautifulSoup
+#Original test file 
+#from searchApi.blueprints import mockdata
 
-from searchApi.blueprints import mockdata
+# Moded by me on 28 january below
+from blueprints import mockdata
 
 search = Blueprint("search", __name__, url_prefix="/search")
 
@@ -35,13 +38,17 @@ data = {
     "pagination": {},
 }
 
-
-@search.route("/google")
+#original file
+#@search.route("/google")
+#moded by samson jan 29
+@search.route("/google", methods=["GET"])
 def google():
     # from
     # https://automatetheboringstuff.com/chapter11/
     q = request.args.get("q")  # not requests
+    print (q + " showing search result in line 49")
     mock = request.args.get("mock")  # not requests
+    print (str(mock) + " one line 51")
     blocked = request.args.get("blocked")  # not requests
     print("q = " + str(q))
     if mock:
@@ -78,7 +85,9 @@ def google():
         + q
         + "&hl=en&gl=us&sourceid=chrome&ie=UTF-8",
         headers=headers_Get,
+
     )
+    print(str(res) + "this is first 1")
     # res.raise_for_status() # not in production
     if (res.status_code >= 400) and (res.status_code < 500):
         """
@@ -108,20 +117,27 @@ def parseJsonResults(dicResults, q):
     # Retrieve top search result links.
     # soup = BeautifulSoup(res.text,"html.parser")
     soup = BeautifulSoup(dicResults, "html.parser")
+    
     #   print("soup ="+soup)
     #   print(soup)
 
     # Open a browser tab for each result.
     # result_count = [0]
-
+    result_count = soup.select('div.LHJvCe')
     # linkElems = soup.select('.r a') # osearch links and titles
-    linkElems = soup.select("div.g div.rc div.r a")  # osearch links and titles
+    #linkElems = soup.select("div.g div.rc div.r a")  # osearch links and titles
+    linkElems = soup.select('.yuRUbf a') # osearch links and titles
+
     # abstractElems = soup.select('.st') # osearch snippets
     abstractElems = soup.select("div.g div.rc div.s div span.st")  # osearch snippets
+    #abstractElems = soup.select('a.k8XOCe') # osearch snippets
+    
     #    relatedSearches = soup.select('.aw5cc a') changed by google in may 2019
-    relatedSearches = soup.select("p.nVcaUb > a")
+    #relatedSearches = soup.select("p.nVcaUb > a")
+    relatedSearches = soup.select("a.EASEnb")
     # pprint(soup.select("p.nVcaUb > a")) # all a tag that inside p
     #   relatedQuestions = soup.select('.st span')
+    relatedQuestions = soup.select('a.k8XOCe')
     # for resultStats in soup.find_all("div", "sd"):
     #    result_count = soup.select('.resultStats div')
     #    print("resultStats =", result_count)
@@ -129,7 +145,7 @@ def parseJsonResults(dicResults, q):
     # result_count = soup.select('.resultStats div')
     # result_count = soup.select('.resultStats')
 
-    print(".resultStats")
+    print(".resultStats" + "Place show 2")
     result_count = 0  # default
     for i in soup.select("#resultStats"):
         print("i.text: ")
@@ -160,9 +176,9 @@ def parseJsonResults(dicResults, q):
         #    print ("k = ", k)
         #    print (j[m])
     print("resultStats2 =", result_count)
-
+    titleElems = soup.select(".yuRUbf a")
     #   for titleElems in soup.find_all("div", "r"):
-    titleElems = soup.select(".r a")
+    #titleElems = soup.select(".r a")
     for x in range(len(titleElems)):
         title = titleElems[x].text
         print("title = " + title + "\n")
@@ -180,6 +196,10 @@ def parseJsonResults(dicResults, q):
         if verbose > 3:
             print("\n\nrelatedSearches")
             print(*relatedSearches, sep="\n")
+    if relatedQuestions:
+        if verbose > 3:
+            print("\n\nrelatedQuestions")
+            print(*relatedQuestions, sep="\n")
 
     #    print(*resultStats, sep = "\n")
     #    total_results = int(resultStats[0])
@@ -199,16 +219,23 @@ def parseJsonResults(dicResults, q):
     html = html + "<p> Total Results: " + str(total_results) + "<br>"
     if verbose > 5:
         print("<p>" + str(total_results) + "<br>")
-    html = html + "<h2>Related Searches</h2>"
+    #===========================================
+    html = html  + "<h2>Related Searches</h2> "
     for x in range(len(relatedSearches)):
         html = html + str(relatedSearches[x]) + "<br><br>"
         if verbose > 5:
             print(str(relatedSearches[x]) + "<br><br>")
-    html = html + "<h2>Related Questions</h2>"
-
+  
+    #===========================================
+    html = html  + "<h2>Related Questions</h2>"
+    for x in range(len(relatedQuestions)):
+        html = html + str(relatedQuestions[x])  + "<br>"
+        if verbose > 5:
+            print("relatedQuestions=" + str(len(relatedQuestions)) + " x=" + str(x) + "\n")
+    #======================================================
     html = html + "<h2>Organic Results</h2>"
     for x in range(len(linkElems)):
-        html = html + str(linkElems[x]) + "<br>"
+        html = html + str(linkElems[x])  + "<br>"
         if verbose > 5:
             print("linkElems=" + str(len(linkElems)) + " x=" + str(x) + "\n")
         # can have link without snippet?
@@ -256,11 +283,9 @@ def parseJsonResults(dicResults, q):
 def ddg():
     return '{"message": "ERROR: not yet supported"}'
 
-
 @search.route("/bing")
 def bing():
     return '{"message": "ERROR: not yet supported"}'
-
 
 @search.route("/multi")
 # multiple engines

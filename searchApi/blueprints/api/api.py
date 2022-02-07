@@ -2,8 +2,11 @@ from flask import Blueprint, request, jsonify
 import requests
 import copy
 from bs4 import BeautifulSoup
+#Original test file 
+#from searchApi.blueprints import mockdata
+# Moded by me on 28 january below
+from blueprints import mockdata
 
-from searchApi.blueprints import mockdata
 import os
 
 api = Blueprint("api", __name__, url_prefix="/api")
@@ -32,17 +35,19 @@ headers_Get = {
 
 # use SerpAPI format for easy digest
 data = {
+    
     "search_metadata": {},
+    
     "search_parameters": {},
+    "local_map": {},
     "search_information": {},
     "ads": [],
-    "local_map": {},
-    "local_results": [],
-    "related_questions": [],
     "answer_box": {},
+    "local_results": [],
     "organic_results": [],
     "related_searches": [],
-    "pagination": {},
+    "related_questions": [],
+    "pagination": [],
 }
 
 
@@ -99,6 +104,7 @@ def googleApi():
             + "&hl=en&gl=us&sourceid=chrome&ie=UTF-8",
             headers=headers_Get,
         )
+    
     # res.raise_for_status() # not in production
     if (res.status_code >= 400) and (res.status_code < 500):
         print("Client ERROR Returned " + str(res.status_code))
@@ -120,7 +126,7 @@ def googleApi():
     print("==============================================")
     print(res.headers.get("content-length"))
     print("==============================================")
-
+    
     #   print some html reponse information
     if verbose > 0:
         print("status = " + str(res.status_code))
@@ -129,18 +135,34 @@ def googleApi():
     # Retrieve top search result links.
     soup = BeautifulSoup(res.text, "html.parser")
     #   print("soup ="+soup)
-    #   print(soup)
+    #print(str(soup)+ "This is line 135")
+     #print(soup)
+    #====================================
+    
+    soup = BeautifulSoup(res.text, "html.parser")
+    #======================
+    
+    
+    with open('soupi.txt', 'w', encoding='utf-8') as f_out:
+        f_out.write(soup.prettify())
 
     # Open a browser tab for each result.
     # linkElems = soup.select('.r a') # osearch links and titles
-    linkElems = soup.select("div.g div.rc div.r a")  # osearch links and titles
-    # abstractElems = soup.select('.st') # osearch snippets
-    abstractElems = soup.select("div.g div.rc div.s div span.st")  # osearch snippets
+    linkElems = soup.select('.yuRUbf a') # osearch links and titles
+    #linkElems = soup.select("div.g div.rc div.r a")  # osearch links and titles
+    abstractElems = soup.select('a.k8XOCe') # osearch snippets
+    # abstractElems = soup.select('a.k8XOCe') # osearch snippets
+    #linkElems = soup.select("div.yuRUbf div.rc div.DKV0Md a")  # osearch links and titles
+    pagination = soup.select('a.fl') # Checking for next page
+    local_results = soup.select('div.LHJvCe')
+    #abstractElems = soup.select("div.g div.rc div.s div span.st")  # osearch snippets
+    #abstractElems = soup.select("div.g div.rc div.s div a.k8XOCe")  # osearch snippets
     #    relatedSearches = soup.select('.aw5cc a') changed by google in may 2019
-    relatedSearches = soup.select("p.nVcaUb > a")
+    #relatedSearches = soup.select("p.nVcaUb > a")
+    relatedSearches = soup.select("a.EASEnb")
     # pprint(soup.select("p.nVcaUb > a")) # all a tag that inside p
 
-    #   relatedQuestions = soup.select('.st span')
+    relatedQuestions = soup.select('a.k8XOCe')
     result_count = 0  # default
     for i in soup.select("#resultStats"):  # id="resultStats"
         print("i.text: ")
@@ -173,18 +195,20 @@ def googleApi():
     print("resultStats2 =", result_count)
 
     #   for titleElems in soup.find_all("div", "r"):
-    titleElems = soup.select(".r a")
+    # titleElems = soup.select(".r a")
+    titleElems = soup.select(".yuRUbf a")
+    
     for x in range(len(titleElems)):
         title = titleElems[x].text
-        print("title = " + title + "\n")
+        print("title =  " + title + "\n")
         link = titleElems[x]["href"]
-        print("link = " + link + "\n")
+        print("link = " + link + " \n")
 
     if verbose > 3:
-        print("\n\nlinkElems")
+        print("\n\nlinkElems line 211")
         print(*linkElems, sep="\n")
 
-        print("\n\nabstractElems")
+        print("\n\nabstractElems line 214")
         print(*abstractElems, sep="\n")
 
     if relatedSearches:
@@ -237,15 +261,33 @@ def googleApi():
         data1["organic_results"].append(
             {"position": position, "title": title, "link": link, "snippet": snippet}
         )
-
-    # "related_questions": []
-
+    
+    # "local_results": [ ]
+    if local_results:
+        for x in range(len(local_results)):
+            query = local_results[x].text
+            
+            data1["local_results"].append({"query": query})
+    # "Pagination": [ ]
+    if pagination:
+        for x in range(len(pagination)):
+            query = pagination[x].text
+            link = pagination[x]["href"]
+            data1["pagination"].append({"query": query, "link": link})
+    
     # "related_searches": [ ]
     if relatedSearches:
         for x in range(len(relatedSearches)):
             query = relatedSearches[x].text
             link = relatedSearches[x]["href"]
             data1["related_searches"].append({"query": query, "link": link})
+            
+    # "related_questions": []
+    if relatedQuestions:
+            for x in range(len(relatedQuestions)):
+                query = relatedQuestions[x].text
+                link = relatedQuestions[x]["href"]
+                data1["related_questions"].append({"query": query, "link": link})
 
     if verbose > 6:
         print("returned data1 out:")
@@ -259,11 +301,9 @@ def googleApi():
 def ddgApi():
     return '{"message": "ERROR: not yet supported"}'
 
-
 @api.route("/bing")
 def bingApi():
     return '{"message": "ERROR: not yet supported"}'
-
 
 @api.route("/multi")
 # multiple engines

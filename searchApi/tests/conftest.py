@@ -1,9 +1,14 @@
 import pytest
+import sys
+sys.path.insert(1, '/flaskApi/searchApi/')
+sys.path.append('/home/ghost/Documents/Fiverr/it support/1st work/working on/flaskApi/searchApi')
 
 from searchApi.app import create_app
 
+#from app import create_app
 
-@pytest.yield_fixture(scope="session")
+#@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def app():
     """
     Setup our flask test app, this only gets executed once.
@@ -23,7 +28,8 @@ def app():
     ctx.pop()
 
 
-@pytest.yield_fixture(scope="function")
+#@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def client(app):
     """
     Setup an app client, this gets executed for each test function.
@@ -36,7 +42,6 @@ def client(app):
 
 # http://pythontesting.net/framework/pytest/pytest-run-tests-using-particular-fixture/
 # conftest.py
-
 
 def pytest_collection_modifyitems(items, config):
     fixture_name = config.option.usesfixture
@@ -61,11 +66,9 @@ def pytest_addoption(parser):
         help="just run tests that use a particular fixture",
     )
 
-
 @pytest.fixture
 def live():
     return "live"
-
 
 @pytest.fixture
 def mock():

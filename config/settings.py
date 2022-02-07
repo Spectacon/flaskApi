@@ -9,7 +9,7 @@ DEVELOPMENT = True
 #SERVER_NAME = 'localhost.localdomain:5000'
 #SERVER_NAME = '127.0.0.1:5000'    # gives cookie error
 # NOTE: .dev has HSTS set to force https - .devil does not
-SERVER_NAME = 'localhost.devil:5000'    # required for pytest
+#SERVER_NAME = 'localhost.devil:5000'    # required for pytest
 SECRET_KEY = 'insecurekey'  # required for csrf
 PERMANENT_SESSION_LIFETIME = 60 * 60 * 24 * 30
 
@@ -45,3 +45,4 @@ PROJECT_SITE_NAME = u'Flask'
 PROJECT_SITE_URL = u'http://127.0.0.1:5000'
 PROJECT_SIGNUP_TOKEN_MAX_AGE = 60 * 60 * 24 * 7  # in seconds
 PROJECT_RECOVER_PASSWORD_TOKEN_MAX_AGE = 60 * 60 * 24 * 7  # in seconds
+
